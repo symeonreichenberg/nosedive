@@ -1,5 +1,15 @@
 {
   "projects": {
     "default": "nosedive-larp"
-  }
+  },
+  "targets": {
+    "nosedive-larp": {
+      "hosting": {
+        "web": [
+          "nosedive-larp-web"
+        ]
+      }
+    }
+  },
+  "etags": {}
 }
