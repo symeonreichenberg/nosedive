@@ -4,21 +4,32 @@ h1, .h1, h2, .h2, h3, .h3, h4, .h4, strong, .strong, p, .p {-webkit-transition: 
 h1, .h1 {font-weight: 100; font-size: 5rem; line-height: 120%; padding-bottom: 1rem;}
 h2, .h2 {font-weight: 100; font-size: 3rem; line-height: 120%; padding-bottom: 1rem;}
 h3, .h3 {font-weight: 100; font-size: 1.5rem; line-height: 120%; padding-bottom: 0.25rem;}
-strong {font-weight: 300 !important;}
+strong {font-weight: 400 !important;}
+p, table, td {font-size: 1.2rem; margin-bottom: 20px;}
+.nav-item {font-size: 1.5rem; position: relative;}
+.nav-link {text-decoration: none; position: relative; transition: all 1s;}
+.nav-link::before{position: absolute; content: ''; height: 0.6rem; width: 110%; bottom: 0; left: 50%; transform: translate(-50%); background-color: #F95AFF; opacity: 0; transition: all 1s;}
+.nav-link:hover::before, .nav-link:active::before, .nav-link:focus::before {opacity: 1; bottom: 0.5rem;}
+.main-headline, .main-headline a, .main-headline h1 {color: #333 !important; text-decoration: none !important; cursor: pointer;}
+h1 a:before {display: none !important;}
 p a {position:relative; text-decoration: none; transition: all 1s;}
 p a::before{position: absolute; content: ''; height: 0.6rem; width: 110%; bottom: 0; left: 50%; transform: translate(-50%); background-color: #F95AFF; opacity: .4; transition: all 1s;}
 p a:hover::before, p a:active::before, p a:focus::before {opacity: 1; bottom: -0.6rem;}
 p a:hover, .nav-link:hover, .active {color: #F95AFF;}
 header {background-image: url(../img/header.jpg); background-size: cover;}
+.up {width: 4rem; height: 4rem; opacity: .8; cursor: pointer; background-image: url(../img/up.svg); background-size: cover; background-repeat: no-repeat; position: fixed; right: 4rem; bottom: 4rem;}
 .non {white-space: nowrap;}
 .btn-primary {font-size: 1.5rem; border-radius: 30px; position: relative; z-index: 999; padding-left: 3rem; padding-right: 3rem; transition: all 1s;}
 .navbar-toggler-icon {background-image: url('../img/hamburger.svg');}
 .bg-light {background-color: #dfaba9 !important;}
 .bg-dark {background-color: #c78ee9 !important;}
 .first-digit, .second-digit, .dot {height: 5em; overflow: hidden; float: left;}
+.third-digit {height: 2em; margin-top: 2.5em; overflow: hidden; float: left;}
 .digits, .dot {float: left; list-style-type: none; font-size: 5rem; line-height: 100%; padding-left: 0;}
+.digits-small {float: left; list-style-type: none; font-size: 2rem; line-height: 100%; padding-left: 0;}
 .first {margin-top: -4em; animation-name: first; animation-duration: 20s; animation-iteration-count: infinite; animation-timing-function: ease; animation-delay: 2.2s; animation-fill-mode: forwards;}
 .second {margin-top: -2em; animation-name: second; animation-duration: 6s; animation-iteration-count: infinite; animation-timing-function: ease; animation-delay: 2.2s; animation-fill-mode: forwards;}
+.third {margin-top: -5em; animation-name: second; animation-duration: .5s; animation-iteration-count: infinite; animation-timing-function: ease; animation-delay: 2.2s; animation-fill-mode: forwards;}
 @keyframes first {
 	0% {margin-top: -4em}
 	30% {margin-top: -3em}
@@ -55,13 +66,8 @@ header {background-image: url(../img/header.jpg); background-size: cover;}
 	h2, .h2 {font-size: 2rem;}
 	h3, .h3 {font-size: 1.5rem;}
 }
-.footer-logo {height: 3.5rem; margin: auto;}
-.logo-pomezi {position: relative; top: -5px;}
-.headline {font-size: 8rem; line-height: 0.8; margin: 0; padding: 0;}
 .head, head a {text-decoration: none !important; color: inherit !important;}
 .head div, .head h1, .head p {cursor: pointer;}
-.name {text-transform: uppercase; letter-spacing: 0.5rem;}
-p, table, td {font-size: 18px; line-height: 1.7;margin-bottom: 20px;}
 .wide-space {letter-spacing: 1.6px;}
 .anchor{height: 100px; margin-top: -100px; visibility: hidden; position: absolute;}
 .quotes, .quotes a, .quotes p, .quotes a:link, .quotes a:hover, .quotes a:active, .quotes a:focus, .quotes a:visited {text-decoration: none !important; cursor: pointer !important; color: #fcecae !important;}
