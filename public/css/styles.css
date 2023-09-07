@@ -5,8 +5,10 @@ h1, .h1 {font-weight: 100; font-size: 5rem; line-height: 120%; padding-bottom: 1
 h2, .h2 {font-weight: 100; font-size: 3rem; line-height: 120%; padding-bottom: 1rem;}
 h3, .h3 {font-weight: 100; font-size: 1.5rem; line-height: 120%; padding-bottom: 0.25rem;}
 strong {font-weight: 300 !important;}
-p a:hover, .nav-link:hover, .active {color: #333333;}
-p a:hover::before {transform: scaleX(0);}
+p a {position:relative; text-decoration: none; transition: all 1s;}
+p a::before{position: absolute; content: ''; height: 0.6rem; width: 110%; bottom: 0; left: 50%; transform: translate(-50%); background-color: #F95AFF; opacity: .4; transition: all 1s;}
+p a:hover::before, p a:active::before, p a:focus::before {opacity: 1; bottom: -0.6rem;}
+p a:hover, .nav-link:hover, .active {color: #F95AFF;}
 header {background-image: url(../img/header.jpg); background-size: cover;}
 .non {white-space: nowrap;}
 .btn-primary {font-size: 1.5rem; border-radius: 30px; position: relative; z-index: 999; padding-left: 3rem; padding-right: 3rem; transition: all 1s;}
@@ -77,7 +79,15 @@ header > .row {height: 100vh; width: 100%}
 .link, .link a, .link a:visited {text-decoration: none; position: relative; z-index: 999; color: #fcecae; padding-bottom: 0.2rem; border-bottom: 2px dashed #fcecae; transition: all 3s;}
 .link:hover, .link:active, .link:focus {border-bottom: 2px solid #fcecae; color: #fcecae !important;}
 .img {width: 100%; min-height: 400px; background-size: cover; background-position: center; display: flex; justify-content: center; align-items: center; border-radius: 20px;}
-
+@media (max-width: 990px) {
+	.img {margin-bottom: 2rem;}
+}
+@media (max-width: 768px) {
+	.img {min-height: 300px;}
+}
+@media (max-width: 450px) {
+	.img {min-height: 200px; background-position: center bottom;}
+}
 .img-1 {background-image: url(../img/img1.jpg);}
 .img-2 {background-image: url(../img/img2.jpg);}
 .img-3 {background-image: url(../img/img3.jpg);}
