@@ -1,13 +1,20 @@
 body {font-family: 'Roboto', Arial, sans-serif; color: #333; webkit-tap-highlight-color: #333; font-weight: 300;}
 a {color: inherit;}
 h1, .h1, h2, .h2, h3, .h3, h4, .h4, strong, .strong, p, .p {-webkit-transition: all 1s;-moz-transition: all 1s;transition: all 1s;cursor: default}
-h1, .h1 {font-weight: 300; font-size: 5rem; line-height: 120%; padding-bottom: 1rem;}
-h1 span, .h1 span {font-weight: 100;}
-h2, .h2 {font-weight: 400; font-size: 1.2rem; line-height: 120%; padding-bottom: 1rem;}
-h3, .h3 {font-weight: 100; font-size: 1.5rem; line-height: 120%; padding-bottom: 0.25rem;}
+h1, .h1 {font-weight: 100; font-size: 5rem; line-height: 120%; padding-bottom: 1rem;}
+h1 span, .h1 span {font-weight: 300;}
+h2, .h2 {font-weight: 100; font-size: 2.5rem; line-height: 120%; padding-bottom: 1rem;}
+h3, .h3 {font-weight: 400; font-size: 1.2rem; line-height: 120%; padding-bottom: 0.25rem;}
+@media (max-width: 1500px) {
+	h1, .h1 {font-size: 3.5rem;}
+}
+@media (max-width: 768px) {
+	h1, .h1 {font-size: 3rem;}
+}
 strong {font-weight: 400 !important;}
 p, table, td, .list, .list ul, .list li {font-size: 1.2rem;}
 p, table {margin-bottom: 0.5rem;}
+.anchor{display: block; height: 200px; margin-top: -200px; visibility: hidden;}
 .nav-item {font-size: 1.5rem; position: relative;}
 .nav-link {text-decoration: none; position: relative; transition: all 1s;}
 .nav-link::before{position: absolute; content: ''; height: 0.2rem; width: 110%; bottom: -1rem; left: 50%; transform: translate(-50%); background-color: #000; opacity: 0; transition: all 1s;}
@@ -22,10 +29,12 @@ p a:hover, .nav-link:hover, .active {color: #000;}
 .btn-primary:hover, .btn-primary:focus, .btn-primary:active {background-color: #c78ee9; color: #fff; border: 2px solid #c78ee9;}
 .btn-check:checked+.btn, .btn.active, .btn.show, .btn:first-child:active, :not(.btn-check)+.btn:active {background-color: #c78ee9; border: 2px solid #c78ee9;}
 header {background-image: url(../img/header.jpg); background-size: cover;}
+@media (max-width: 768px) {
+	header {background-position: -230px;}
+}
+.author {max-width: 9rem;}
 .up {width: 4rem; height: 4rem; opacity: .8; cursor: pointer; background-image: url(../img/up.svg); background-size: cover; background-repeat: no-repeat; position: fixed; right: 4rem; bottom: 4rem;}
 .non {white-space: nowrap;}
-
-
 .navbar-toggler-icon {background-image: url('../img/hamburger.svg');}
 .bg-light {background-color: #dfaba9 !important;}
 .bg-dark {background-color: #c78ee9 !important;}
@@ -36,10 +45,10 @@ footer p {padding-right: 2rem;}
 .digits, .dot {float: left; list-style-type: none; font-size: 5rem; line-height: 100%; padding-left: 0;}
 .digits-small {float: left; list-style-type: none; font-size: 2rem; line-height: 100%; padding-left: 0;}
 .first, .second, .third, .fourth {animation-iteration-count: infinite; animation-timing-function: ease; animation-delay: 0.5s; animation-fill-mode: forwards;}
-.first {margin-top: -4em; animation-name: first; animation-duration: 40s;}
-.second {margin-top: -2em; animation-name: second; animation-duration: 40s;}
-.third {margin-top: -5em; animation-name: third; animation-duration: 12s;}
-.fourth {margin-top: -1em; animation-name: third; animation-duration: .8s;}
+.first {margin-top: -4em; animation-name: first; animation-duration: 80s;}
+.second {margin-top: -2em; animation-name: second; animation-duration: 80s;}
+.third {margin-top: -5em; animation-name: third; animation-duration: 24s;}
+.fourth {margin-top: -1em; animation-name: third; animation-duration: 1.6s;}
 @keyframes first {
 	0% {margin-top: -4em}
 	10% {margin-top: -3em}
@@ -99,14 +108,6 @@ footer p {padding-right: 2rem;}
 	85% {margin-top: -0em}
 	90% {margin-top: -1em}
 	95% {margin-top: -5em}
-}
-@media (max-width: 1500px) {
-	h1, .h1 {font-size: 3.5rem;}
-}
-@media (max-width: 768px) {
-	h1, .h1 {font-size: 3rem;}
-	h2, .h2 {font-size: 2rem;}
-	h3, .h3 {font-size: 1.5rem;}
 }
 .head, head a {text-decoration: none !important; color: inherit !important;}
 .head div, .head h1, .head p {cursor: pointer;}
