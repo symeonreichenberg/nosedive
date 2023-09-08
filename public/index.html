@@ -16,7 +16,6 @@
 		<link rel="stylesheet" href="./css/animate.min.css"/>
 		<link rel="stylesheet" href="./css/ionicons.min.css"/>
 		<link rel="stylesheet" href="./css/styles.css"/>
-		<link rel="stylesheet" href="./css/spinners.css"/>
 		<link rel="preconnect" href="https://fonts.googleapis.com"/>
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 		<link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;1,100;1,300;1,400&display=swap" rel="stylesheet">
@@ -288,7 +287,7 @@
 						<div class="col-lg-7 col-12">
 							<h1>Přihlasování</h1>
 							<p>Přihlašování bude spuštěno v průběhu října.</p>
-							<a href="#" target="_blank" class="btn btn-primary">Přihlašovací formulář</a>
+							<!--<a href="#" target="_blank" class="btn btn-primary mt-4">Přihlašovací formulář</a>-->
 						</div>
 					</div>
 				</div>
@@ -304,6 +303,10 @@
 						<div class="col-lg-7 col-12 order-lg-1 order-2">
 							<h1>Autoři hry</h1>
 							<!--
+							<h2>Jméno autora</h2>
+							<p>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec quam felis, ultricies nec, pellentesque eu, pretium quis, sem. Nulla consequat massa quis enim.</p>
+							<h2>Jméno autora</h2>
+							<p>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec quam felis, ultricies nec, pellentesque eu, pretium quis, sem. Nulla consequat massa quis enim.</p>
 							<h2>Jméno autora</h2>
 							<p>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec quam felis, ultricies nec, pellentesque eu, pretium quis, sem. Nulla consequat massa quis enim.</p>
 							-->
@@ -325,11 +328,9 @@
 		</footer>
 		<div id="up" class="up d-none"></div>
 		<script type="text/javascript" src="./js/jquery.min.js"></script>
-		<script type="text/javascript" src="./js/typewriter.js"></script>
 		<script type="text/javascript" src="./js/wow.js"></script>
-		<script type="text/javascript" src="./js/scripts.js"></script>
 		<script>
-			window.addEventListener('click', event => renderEffect(event))
+			window.addEventListener('click', event => renderEffect(event));
 			function renderEffect(event) {
 				let effect = document.createElement('div');
 				document.body.appendChild(effect);
@@ -356,6 +357,10 @@
 					$(up).addClass('d-none');
 				}
 			});
+			function closeMenu() {
+				var menu = document.getElementById("menu");
+				menu.classList.remove("show");
+			};
 		</script>
 	</body>
 </html>
