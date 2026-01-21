@@ -138,16 +138,16 @@ header > .row {height: 100vh; width: 100%}
 @media (max-width: 450px) {
 	.img {min-height: 200px; background-position: center bottom;}
 }
-.img-1 {background-image: url(../img/img1.jpg);}
-.img-2 {background-image: url(../img/img2.jpg);}
-.img-3 {background-image: url(../img/img3.jpg);}
+.img-1 {background-image: url(../img/img1_2026.jpg);}
+.img-2 {background-image: url(../img/img2_2026.jpg);}
+.img-3 {background-image: url(../img/img3_2026.jpg);}
 .img-4 {background-image: url(../img/img4.jpg);}
-.img-5 {background-image: url(../img/img5.jpg);}
-.img-6 {background-image: url(../img/img6.jpg);}
+.img-5 {background-image: url(../img/img5_2026.jpg);}
+.img-6 {background-image: url(../img/img6_2026.jpg);}
 .img-7 {background-image: url(../img/img7.jpg);}
-.img-8 {background-image: url(../img/img8.jpg);}
+.img-8 {background-image: url(../img/img8_2026.jpg);}
 .img-9 {background-image: url(../img/img9.jpg);}
-.img-10 {background-image: url(../img/img10.jpg);}
+.img-10 {background-image: url(../img/img10_2026.jpg);}
 .like, .hearth, .angry, .oh, .ouch, .sad, .ups, .yay {width: 6rem; height: 6rem; background-size: cover; background-repeat: no-repeat; opacity: .4; animation: hearthbeat 1.8s infinite alternate;}
 .like {background-image: url(../img/like.png);}
 .hearth {background-image: url(../img/hearth.png);}
