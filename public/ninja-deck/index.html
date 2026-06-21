@@ -1,0 +1,1853 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>NINJA // OFF-GRID DECK</title>
+    <!-- Google Fonts: Share Tech Mono and JetBrains Mono for a raw hacker feel -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <!-- jsPDF Library loaded via stable CDN for client-side PDF generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        :root {
+            --bg-color: #030704;
+            --terminal-green: #39ff14; /* Glowing Neon green */
+            --terminal-green-dim: #1e8e0a;
+            --terminal-green-glow: rgba(57, 255, 20, 0.4);
+            --terminal-red: #ff3333;
+            --terminal-red-glow: rgba(255, 51, 51, 0.4);
+            --bg-glass: rgba(3, 7, 4, 0.85);
+            --border-glow: rgba(57, 255, 20, 0.2);
+            --font-mono: 'Share Tech Mono', 'JetBrains Mono', monospace;
+        }
+
+        /* CRT Screen Scanline & Flicker FX */
+        .scanlines {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                to bottom,
+                rgba(255,255,255,0),
+                rgba(255,255,255,0) 50%,
+                rgba(0, 0, 0, 0.4) 50%,
+                rgba(0, 0, 0, 0.4)
+            );
+            background-size: 100% 4px;
+            z-index: 9999;
+            pointer-events: none;
+            opacity: 0.3;
+        }
+
+        .screen-glitch {
+            animation: crt-flicker 0.18s infinite;
+        }
+
+        @keyframes crt-flicker {
+            0% { opacity: 0.993; }
+            50% { opacity: 0.988; }
+            100% { opacity: 1.0; }
+        }
+
+        /* Base Setup */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            background-color: var(--bg-color);
+            color: var(--terminal-green);
+            font-family: var(--font-mono);
+            overflow: hidden;
+            position: relative;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            background-image: 
+                radial-gradient(circle at 50% 40%, rgba(57, 255, 20, 0.08), transparent 70%);
+            text-shadow: 0 0 4px var(--terminal-green-glow);
+        }
+
+        button, .file-item {
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        button:active, .file-item:active {
+            transform: scale(0.97);
+            filter: brightness(1.2);
+        }
+
+        /* ------------------ STATE 1: MAIN EXPLORER SHELL ------------------ */
+        #app-shell {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            height: 100%;
+            position: relative;
+            background: var(--bg-color);
+        }
+
+        .app-header {
+            background: #000;
+            border-bottom: 1px dashed var(--terminal-green);
+            padding: 14px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            z-index: 10;
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-logo {
+            font-size: 1.15rem;
+            font-weight: bold;
+            letter-spacing: 0.05em;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .system-status {
+            font-size: 0.7rem;
+            background: rgba(57, 255, 20, 0.05);
+            border: 1px solid var(--terminal-green-dim);
+            padding: 2px 8px;
+            border-radius: 2px;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .header-info-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.75rem;
+            color: var(--terminal-green-dim);
+            border-top: 1px dashed rgba(57, 255, 20, 0.15);
+            padding-top: 6px;
+        }
+
+        .connection-status {
+            color: var(--terminal-green-dim);
+        }
+
+        /* Breadcrumbs bar */
+        .breadcrumb-bar {
+            background: rgba(0, 0, 0, 0.5);
+            border-bottom: 1px dashed rgba(57, 255, 20, 0.1);
+            padding: 8px 16px;
+            font-size: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--terminal-green-dim);
+        }
+
+        .breadcrumb-item.active {
+            color: var(--terminal-green);
+            font-weight: bold;
+        }
+
+        .breadcrumb-separator {
+            color: var(--terminal-green-dim);
+            opacity: 0.5;
+        }
+
+        .explorer-viewport {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .explorer-section-title {
+            font-size: 0.85rem;
+            color: var(--terminal-green-dim);
+            letter-spacing: 0.05em;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+        }
+
+        .files-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .file-item {
+            background: var(--bg-glass);
+            border: 1px solid rgba(57, 255, 20, 0.15);
+            border-radius: 4px;
+            padding: 12px 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            position: relative;
+        }
+
+        .file-item.selected {
+            border-color: var(--terminal-green);
+            box-shadow: 0 0 10px rgba(57, 255, 20, 0.1);
+            background: rgba(57, 255, 20, 0.02);
+        }
+
+        .file-main {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 0;
+        }
+
+        .file-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            border: 1px dashed var(--terminal-green-dim);
+            border-radius: 4px;
+            color: var(--terminal-green);
+            flex-shrink: 0;
+        }
+
+        .file-icon.zip {
+            border-color: var(--terminal-green);
+            color: var(--terminal-green);
+            box-shadow: 0 0 4px var(--terminal-green-glow);
+        }
+        .file-icon.zip.locked {
+            border-color: var(--terminal-red);
+            color: var(--terminal-red);
+        }
+
+        .file-icon svg {
+            width: 18px;
+            height: 18px;
+            fill: currentColor;
+        }
+
+        .file-details {
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+
+        .file-title {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--terminal-green);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .file-meta {
+            font-size: 0.7rem;
+            color: var(--terminal-green-dim);
+            margin-top: 2px;
+        }
+
+        .arrow-indicator {
+            color: var(--terminal-green-dim);
+        }
+
+        .arrow-indicator svg {
+            width: 14px;
+            height: 14px;
+            fill: currentColor;
+        }
+
+        /* ------------------ DECRYPTION MODAL DIALOG ------------------ */
+        #decryption-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            z-index: 800;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal-container {
+            width: 100%;
+            max-width: 400px;
+            background: var(--bg-color);
+            border: 1px dashed var(--terminal-green);
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 0 30px rgba(57, 255, 20, 0.3);
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .modal-header {
+            text-align: center;
+            border-bottom: 1px dashed var(--terminal-green-dim);
+            padding-bottom: 10px;
+            color: var(--terminal-green);
+        }
+
+        .modal-header h2 {
+            font-size: 1.1rem;
+            letter-spacing: 0.05em;
+        }
+
+        .modal-body-text {
+            font-size: 0.8rem;
+            line-height: 1.5;
+            color: var(--terminal-green-dim);
+            text-align: justify;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-group label {
+            font-size: 0.75rem;
+            letter-spacing: 0.05em;
+            color: var(--terminal-green-dim);
+        }
+
+        .password-input {
+            width: 100%;
+            background: #000;
+            border: 1px solid var(--terminal-green-dim);
+            border-radius: 4px;
+            padding: 12px;
+            font-family: var(--font-mono);
+            font-size: 1.1rem;
+            color: var(--terminal-green);
+            outline: none;
+            text-align: center;
+            transition: all 0.3s ease;
+            box-shadow: inset 0 0 5px rgba(0,0,0,0.8);
+        }
+
+        .password-input:focus {
+            border-color: var(--terminal-green);
+            box-shadow: 0 0 8px rgba(57, 255, 20, 0.3);
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .modal-btn {
+            flex: 1;
+            background: transparent;
+            border: 1px solid var(--terminal-green);
+            color: var(--terminal-green);
+            border-radius: 4px;
+            padding: 12px;
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+
+        .modal-btn.secondary {
+            border-color: var(--terminal-green-dim);
+            color: var(--terminal-green-dim);
+        }
+
+        .error-message {
+            background: rgba(255, 51, 51, 0.1);
+            border: 1px solid var(--terminal-red);
+            border-radius: 4px;
+            color: var(--terminal-red);
+            padding: 8px 10px;
+            font-size: 0.75rem;
+            text-align: center;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            animation: shake 0.3s;
+            text-shadow: 0 0 4px var(--terminal-red-glow);
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-8px); }
+            40%, 80% { transform: translateX(8px); }
+        }
+
+        /* ------------------ DECRYPTION PROGRESS OVERLAY ------------------ */
+        #decryption-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-color);
+            z-index: 1000;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .decrypt-loader {
+            width: 100%;
+            max-width: 400px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .decrypt-headline {
+            font-size: 1.1rem;
+            color: var(--terminal-green);
+            text-align: center;
+            letter-spacing: 0.05em;
+        }
+
+        .decrypt-bar-container {
+            width: 100%;
+            height: 14px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid var(--terminal-green-dim);
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative;
+            padding: 2px;
+        }
+
+        .decrypt-bar-fill {
+            width: 0%;
+            height: 100%;
+            background: var(--terminal-green);
+            box-shadow: 0 0 8px var(--terminal-green-glow);
+            transition: width 0.1s linear;
+        }
+
+        .decrypt-logs {
+            width: 100%;
+            background: #000;
+            border: 1px solid rgba(57, 255, 20, 0.15);
+            border-radius: 4px;
+            height: 180px;
+            overflow-y: hidden;
+            font-size: 0.75rem;
+            color: var(--terminal-green);
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .decrypt-log-line {
+            opacity: 0.95;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+
+        /* ------------------ MOBILE SLIDE-IN VIEWER ------------------ */
+        #document-viewer {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-color);
+            z-index: 500;
+            display: flex;
+            flex-direction: column;
+            transform: translateX(100%);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        #document-viewer.open {
+            transform: translateX(0);
+        }
+
+        .viewer-header {
+            background: #000;
+            border-bottom: 1px dashed var(--terminal-green);
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .back-btn {
+            background: transparent;
+            border: 1px solid var(--terminal-green-dim);
+            border-radius: 4px;
+            padding: 6px 12px;
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            color: var(--terminal-green);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .back-btn svg {
+            width: 14px;
+            height: 14px;
+            fill: currentColor;
+        }
+
+        .viewer-title-block {
+            flex-grow: 1;
+            min-width: 0;
+        }
+
+        .viewer-filename {
+            font-size: 0.9rem;
+            color: var(--terminal-green);
+            font-weight: bold;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .viewer-tag {
+            font-size: 0.65rem;
+            color: var(--terminal-green-dim);
+            text-transform: uppercase;
+        }
+
+        .viewer-body {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        /* Action Buttons Area */
+        .viewer-actions {
+            border-bottom: 1px dashed rgba(57, 255, 20, 0.15);
+            padding-bottom: 14px;
+            margin-bottom: 6px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .download-btn {
+            width: 100%;
+            background: transparent;
+            border: 1px solid var(--terminal-green);
+            color: var(--terminal-green);
+            border-radius: 4px;
+            padding: 12px;
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 0 8px rgba(57, 255, 20, 0.15);
+        }
+
+        /* Document Styling */
+        .doc-layout-note {
+            background: rgba(0, 0, 0, 0.7);
+            border: 1px solid rgba(57, 255, 20, 0.15);
+            border-radius: 4px;
+            padding: 16px;
+            font-size: 0.85rem;
+            line-height: 1.5;
+            color: var(--terminal-green);
+        }
+
+        .doc-layout-note p {
+            margin-bottom: 10px;
+        }
+
+        /* Invoice Scanned Render UI */
+        .doc-layout-invoice {
+            background: #fff;
+            color: #111;
+            border-radius: 4px;
+            padding: 16px;
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            line-height: 1.4;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .inv-header {
+            border-bottom: 2px solid #111;
+            padding-bottom: 8px;
+            margin-bottom: 6px;
+        }
+
+        .inv-title {
+            font-size: 0.95rem;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .inv-address-grid {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 6px;
+        }
+
+        .inv-address-col {
+            flex: 1;
+        }
+
+        .inv-meta-grid {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 4px;
+        }
+
+        .inv-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.65rem;
+            margin-bottom: 10px;
+        }
+
+        .inv-table th, .inv-table td {
+            border-bottom: 1px solid #111;
+            padding: 6px 4px;
+            text-align: left;
+        }
+
+        .inv-table th {
+            border-bottom: 2px solid #111;
+            font-weight: bold;
+        }
+
+        .inv-totals-box {
+            align-self: flex-end;
+            display: grid;
+            grid-template-columns: 100px 80px;
+            font-size: 0.65rem;
+            margin-top: 4px;
+            text-align: right;
+        }
+
+        .inv-totals-box .bold {
+            font-weight: bold;
+            border-top: 1px solid #111;
+            padding-top: 4px;
+            margin-top: 2px;
+        }
+
+        .inv-bank-info {
+            background: #eee;
+            padding: 8px;
+            border-radius: 4px;
+            margin-top: 8px;
+            font-size: 0.62rem;
+        }
+
+        .inv-desc {
+            margin-top: 8px;
+            font-size: 0.62rem;
+            font-style: italic;
+        }
+
+        /* Sound Control */
+        .sound-toggle-btn {
+            position: fixed;
+            bottom: 16px;
+            right: 16px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--bg-glass);
+            border: 1px solid var(--terminal-green-dim);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--terminal-green);
+            box-shadow: 0 0 10px rgba(57, 255, 20, 0.15);
+            z-index: 100;
+        }
+
+        .sound-toggle-btn.muted {
+            color: var(--terminal-green-dim);
+            border-color: rgba(57, 255, 20, 0.05);
+            box-shadow: none;
+        }
+
+        .sound-toggle-btn svg {
+            width: 18px;
+            height: 18px;
+            fill: currentColor;
+        }
+
+        .explorer-viewport::-webkit-scrollbar, .viewer-body::-webkit-scrollbar {
+            width: 4px;
+        }
+        .explorer-viewport::-webkit-scrollbar-track, .viewer-body::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .explorer-viewport::-webkit-scrollbar-thumb, .viewer-body::-webkit-scrollbar-thumb {
+            background: var(--terminal-green-dim);
+            border-radius: 2px;
+        }
+    </style>
+</head>
+<body class="screen-glitch">
+
+    <!-- Scanline Overlay Effect -->
+    <div class="scanlines"></div>
+
+    <!-- Audio Toggle Button -->
+    <button class="sound-toggle-btn" id="audio-toggle" title="Zvuk zapnut/vypnut">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" id="audio-on-icon">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15.5h-2v-2h2v2zm0-4h-2v-6h2v6z"/>
+        </svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" id="audio-off-icon" style="display: none;">
+            <path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM12 4L9.91 6.09 12 8.18V4zm-8.1 1.7L2.8 6.8 6 10H3v4h3l4 4v-5.18l3 3V19c0 .72-.5 1.34-1.2 1.48l-.05.01c-.13.01-.25.01-.38.01-1.38 0-2.5-1.12-2.5-2.5h-2c0 2.48 2.02 4.5 4.5 4.5.21 0 .42-.02.62-.05l.08-.02c1.7-.35 2.8-1.93 2.8-3.65v-1.18l3.1 3.1 1.1-1.1-12.2-12.2z"/>
+        </svg>
+    </button>
+
+    <!-- ------------------ STATE 1: EXPLORER SHELL ------------------ -->
+    <div id="app-shell">
+        <header class="app-header">
+            <div class="header-top">
+                <div class="header-logo">
+                    <span>NINJA // OFF-GRID DECK</span>
+                </div>
+                <div class="system-status">
+                    <span id="system-status-text">DECK: ONLINE</span>
+                </div>
+            </div>
+            <div class="header-info-bar">
+                <div id="deck-target-desc"></div>
+                <div class="connection-status">HOST: LOCALHOST_DECRYPT</div>
+            </div>
+        </header>
+
+        <!-- Breadcrumbs -->
+        <nav class="breadcrumb-bar">
+            <span class="breadcrumb-item">Ninja_Files</span>
+            <span class="breadcrumb-separator">/</span>
+            <span class="breadcrumb-item active" id="current-folder-breadcrumb">root</span>
+        </nav>
+
+        <main class="explorer-viewport">
+            <div class="explorer-section-title" id="explorer-view-title">Soubory v adresáři</div>
+            <div class="files-list" id="files-container">
+                <!-- Dynamic Files render here -->
+            </div>
+        </main>
+    </div>
+
+    <!-- ------------------ DECRYPTION MODAL DIALOG ------------------ -->
+    <div id="decryption-modal">
+        <div class="modal-container">
+            <header class="modal-header">
+                <h2>DEŠIFROVAT ARCHIV</h2>
+            </header>
+
+            <div class="modal-body-text">
+                <p>Soubor <strong>hrda_dive_analytica_proof.zip</strong> je chráněn silným šifrováním. Pro rozbalení dokumentů musíte zadat platné heslo.</p>
+            </div>
+
+            <form id="decrypt-form" class="form-group" onsubmit="handleDecryptSubmit(event)">
+                <label for="vault-password">Zadejte dešifrovací heslo (zobrazené):</label>
+                <div class="input-wrapper">
+                    <!-- Note: type="text" ensures the password is UNMASKED and visible to the user -->
+                    <input 
+                        type="text" 
+                        id="vault-password" 
+                        class="password-input" 
+                        placeholder="ZADEJTE HESLO..." 
+                        autocomplete="off"
+                        required
+                    >
+                </div>
+                
+                <div class="error-message" id="decrypt-error">
+                    <span>** CHYBNÉ HESLO - PŘÍSTUP ODEPŘEN **</span>
+                </div>
+
+                <div class="modal-buttons">
+                    <button type="submit" class="modal-btn" id="decrypt-submit">ROZBALIT</button>
+                    <button type="button" class="modal-btn secondary" onclick="closeDecryptionModal()">ZRUŠIT</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ------------------ DECRYPTION PROGRESS OVERLAY ------------------ -->
+    <div id="decryption-overlay">
+        <div class="decrypt-loader">
+            <div class="decrypt-headline" id="decrypt-status-text">ROZBALUJI ARCHIV</div>
+            <div class="decrypt-bar-container">
+                <div class="decrypt-bar-fill" id="decrypt-progress"></div>
+            </div>
+            <div class="decrypt-logs" id="decrypt-logs-container">
+                <!-- Log lines will be appended dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <!-- ------------------ MOBILE SLIDE-IN VIEWER ------------------ -->
+    <section id="document-viewer">
+        <header class="viewer-header">
+            <!-- As requested, button says "Zpět na všechny soubory" -->
+            <button class="back-btn" onclick="closeDocumentViewer()">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+                </svg>
+                <span>Zpět na všechny soubory</span>
+            </button>
+            <div class="viewer-title-block">
+                <div class="viewer-filename" id="viewer-file-title">faktura_dive_to_reputelligent.pdf</div>
+                <div class="viewer-tag" id="viewer-file-tag">SOUBOR PDF</div>
+            </div>
+        </header>
+
+        <div class="viewer-body">
+            <!-- Downloader actions panel -->
+            <div class="viewer-actions" id="viewer-downloader-panel" style="display: none;">
+                <!-- Text changed to "Stáhnout PDF" as requested -->
+                <button class="download-btn" id="download-file-btn">
+                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-5 5-5-5h3V9h4v4h3z"/>
+                    </svg>
+                    <span>Stáhnout PDF</span>
+                </button>
+            </div>
+            
+            <div id="viewer-content-area">
+                <!-- Dynamically populated document content -->
+            </div>
+        </div>
+    </section>
+
+    <!-- ------------------ JAVASCRIPT CODE ------------------ -->
+    <script>
+        let isMuted = true;
+        let audioCtx = null;
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        const audioToggle = document.getElementById('audio-toggle');
+        const audioOnIcon = document.getElementById('audio-on-icon');
+        const audioOffIcon = document.getElementById('audio-off-icon');
+
+        audioToggle.addEventListener('click', () => {
+            initAudio();
+            isMuted = !isMuted;
+            if (isMuted) {
+                audioOnIcon.style.display = 'none';
+                audioOffIcon.style.display = 'block';
+                audioToggle.classList.add('muted');
+            } else {
+                audioOnIcon.style.display = 'block';
+                audioOffIcon.style.display = 'none';
+                audioToggle.classList.remove('muted');
+                playTone(700, 'sine', 0.04, 0.02);
+            }
+        });
+
+        function playTone(freq, type, duration, volume = 0.1, delay = 0) {
+            if (isMuted || !audioCtx) return;
+            
+            setTimeout(() => {
+                try {
+                    const osc = audioCtx.createOscillator();
+                    const gainNode = audioCtx.createGain();
+                    
+                    osc.type = type;
+                    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                    
+                    gainNode.gain.setValueAtTime(volume, audioCtx.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + duration);
+                    
+                    osc.connect(gainNode);
+                    gainNode.connect(audioCtx.destination);
+                    
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + duration);
+                } catch (e) {
+                    console.error("Audio error: ", e);
+                }
+            }, delay * 1000);
+        }
+
+        function playKeypressSound() {
+            playTone(600 + Math.random() * 300, 'sine', 0.03, 0.05);
+        }
+
+        function playErrorSound() {
+            playTone(90, 'sawtooth', 0.5, 0.2);
+            playTone(85, 'sawtooth', 0.5, 0.2, 0.08);
+        }
+
+        function playSuccessSound() {
+            // hacker terminal melody (ascending minors)
+            playTone(293.66, 'triangle', 0.5, 0.1); // D4
+            playTone(349.23, 'triangle', 0.5, 0.1, 0.1); // F4
+            playTone(440.00, 'triangle', 0.5, 0.1, 0.2); // A4
+            playTone(587.33, 'sine', 0.8, 0.08, 0.3); // D5
+        }
+
+        function playNavigationSound() {
+            playTone(900, 'sine', 0.06, 0.03);
+        }
+
+        document.getElementById('vault-password').addEventListener('input', playKeypressSound);
+
+        // Global State
+        let isZipDecrypted = false;
+        let currentFolder = 'root';
+        let activeDecryptionFile = null;
+
+        // Root Folder Database (Initial files: only ZIP archives)
+        const rootFiles = [
+            {
+                id: 'hrda_zip',
+                name: 'hrda_dive_analytica_proof.zip',
+                type: 'zip',
+                size: '296.8 KB',
+                date: '21. 6. 2026',
+                tag: 'ZAŠIFROVANÝ ZIP ARCHIV',
+                locked: true,
+                decryptable: true
+            },
+            {
+                id: 'job24_zip',
+                name: 'job24.zip',
+                type: 'zip',
+                size: '42.1 KB',
+                date: '12. 5. 2026',
+                tag: 'ZAŠIFROVANÝ ZIP ARCHIV',
+                locked: true,
+                decryptable: false
+            },
+            {
+                id: 'job42_zip',
+                name: 'job42.zip',
+                type: 'zip',
+                size: '1.2 MB',
+                date: '02. 6. 2026',
+                tag: 'ZAŠIFROVANÝ ZIP ARCHIV',
+                locked: true,
+                decryptable: false
+            },
+            {
+                id: 'job42final_zip',
+                name: 'job42final.zip',
+                type: 'zip',
+                size: '1.4 MB',
+                date: '20. 6. 2026',
+                tag: 'ZAŠIFROVANÝ ZIP ARCHIV',
+                locked: true,
+                decryptable: false
+            }
+        ];
+
+        // Decrypted ZIP folder Database
+        const zipFolderFiles = [
+            {
+                id: 'faktura_dive_to_reputelligent',
+                name: 'faktura_dive_to_reputelligent.pdf',
+                type: 'pdf',
+                size: '93.7 KB',
+                date: '20. 4. 2024',
+                tag: 'FAKTURA PDF (EXTRAHOVÁNO)',
+                downloadable: true,
+                downloadFunc: function() {
+                    downloadInvoicePDF('dive_to_reputelligent');
+                },
+                render: function() {
+                    return `
+                        <div class="doc-layout-invoice">
+                            <div class="inv-header">
+                                <div class="inv-title">Invoice: Dive Analytica to Reputelligent</div>
+                            </div>
+                            <div class="inv-address-grid">
+                                <div class="inv-address-col">
+                                    <strong>Dive Analytica GmbH</strong><br>
+                                    45 Rue de la Technologie<br>
+                                    Brussels, BE 1000<br>
+                                    EU
+                                </div>
+                                <div class="inv-address-col" style="text-align: right;">
+                                    <strong>Reputelligent, Inc.</strong><br>
+                                    123 Silicon Valley Way<br>
+                                    San Francisco, CA 94103<br>
+                                    USA
+                                </div>
+                            </div>
+                            <div class="inv-meta-grid">
+                                <div><strong>Invoice Number:</strong> DA-REPT-2024-002</div>
+                                <div><strong>Invoice Date:</strong> 2024-04-20</div>
+                                <div><strong>Due Date:</strong> 2024-05-20</div>
+                            </div>
+                            <table class="inv-table">
+                                <thead>
+                                    <tr>
+                                        <th>Item</th>
+                                        <th style="text-align: right;">Qty</th>
+                                        <th style="text-align: right;">Unit Price</th>
+                                        <th style="text-align: right;">Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Algorithm Calibration Services (Reputelligent Data)</td>
+                                        <td style="text-align: right;">1</td>
+                                        <td style="text-align: right;">€60,000.00</td>
+                                        <td style="text-align: right;">€60,000.00</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Data Analysis & Report (Cross-Platform Discrepancies)</td>
+                                        <td style="text-align: right;">1</td>
+                                        <td style="text-align: right;">€15,000.00</td>
+                                        <td style="text-align: right;">€15,000.00</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Consultation & Strategy Session (8 Hours)</td>
+                                        <td style="text-align: right;">8</td>
+                                        <td style="text-align: right;">€300.00</td>
+                                        <td style="text-align: right;">€2,400.00</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <div class="inv-totals-box">
+                                <div>Subtotal:</div>
+                                <div>€77,400.00</div>
+                                <div>VAT (BE, 21%):</div>
+                                <div>€16,254.00</div>
+                                <div class="bold">Total:</div>
+                                <div class="bold">€93,654.00</div>
+                            </div>
+                            <div class="inv-bank-info">
+                                <strong>Payment Terms:</strong> Net 30 days. Payment via wire transfer.<br>
+                                <strong>Bank Name:</strong> European Central Finance<br>
+                                <strong>Account Number:</strong> 9876-5432-1098-7654 | <strong>SWIFT:</strong> EURCFBE1234
+                            </div>
+                            <div class="inv-desc">
+                                <strong>Description:</strong> Services for calibrating Dive Analytica’s rating algorithms using Reputelligent’s US-based data, including a detailed analysis of cross-platform rating discrepancies and strategic consultation.
+                            </div>
+                        </div>
+                    `;
+                }
+            },
+            {
+                id: 'faktura_reputelligent_to_dive',
+                name: 'faktura_reputelligent_to_dive.pdf',
+                type: 'pdf',
+                size: '93.2 KB',
+                date: '15. 3. 2024',
+                tag: 'FAKTURA PDF (EXTRAHOVÁNO)',
+                downloadable: true,
+                downloadFunc: function() {
+                    downloadInvoicePDF('reputelligent_to_dive');
+                },
+                render: function() {
+                    return `
+                        <div class="doc-layout-invoice">
+                            <div class="inv-header">
+                                <div class="inv-title">Invoice: Reputelligent to Dive Analytica</div>
+                            </div>
+                            <div class="inv-address-grid">
+                                <div class="inv-address-col">
+                                    <strong>Reputelligent, Inc.</strong><br>
+                                    123 Silicon Valley Way<br>
+                                    San Francisco, CA 94103<br>
+                                    USA
+                                </div>
+                                <div class="inv-address-col" style="text-align: right;">
+                                    <strong>Dive Analytica GmbH</strong><br>
+                                    45 Rue de la Technologie<br>
+                                    Brussels, BE 1000<br>
+                                    EU
+                                </div>
+                            </div>
+                            <div class="inv-meta-grid">
+                                <div><strong>Invoice Number:</strong> REPT-DA-2024-001</div>
+                                <div><strong>Invoice Date:</strong> 2024-03-15</div>
+                                <div><strong>Due Date:</strong> 2024-04-15</div>
+                            </div>
+                            <table class="inv-table">
+                                <thead>
+                                    <tr>
+                                        <th>Item</th>
+                                        <th style="text-align: right;">Qty</th>
+                                        <th style="text-align: right;">Unit Price</th>
+                                        <th style="text-align: right;">Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Access to EU Social Rating Data API</td>
+                                        <td style="text-align: right;">1</td>
+                                        <td style="text-align: right;">$50,000.00</td>
+                                        <td style="text-align: right;">$50,000.00</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Historical EU Rating Data (Bulk Export)</td>
+                                        <td style="text-align: right;">1</td>
+                                        <td style="text-align: right;">$25,000.00</td>
+                                        <td style="text-align: right;">$25,000.00</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Technical Support & Integration (10 Hours)</td>
+                                        <td style="text-align: right;">10</td>
+                                        <td style="text-align: right;">$200.00</td>
+                                        <td style="text-align: right;">$2,000.00</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <div class="inv-totals-box">
+                                <div>Subtotal:</div>
+                                <div>$77,000.00</div>
+                                <div>VAT (EU, 21%):</div>
+                                <div>$16,170.00</div>
+                                <div class="bold">Total:</div>
+                                <div class="bold">$93,170.00</div>
+                            </div>
+                            <div class="inv-bank-info">
+                                <strong>Payment Terms:</strong> Net 30 days. Payment via wire transfer.<br>
+                                <strong>Bank Name:</strong> Global Commerce Bank<br>
+                                <strong>Account Number:</strong> 1234-5678-9012-3456 | <strong>SWIFT:</strong> GLOBCUS6789
+                            </div>
+                            <div class="inv-desc">
+                                <strong>Description:</strong> Provision of access to Dive Analytica’s proprietary European social rating data via API and bulk export, along with technical support for integration into Reputelligent’s platform.
+                            </div>
+                        </div>
+                    `;
+                }
+            },
+            {
+                id: 'faktura_reputelligent_to_dive_rnd',
+                name: 'faktura_reputelligent_to_dive_rnd.pdf',
+                type: 'pdf',
+                size: '110.0 KB',
+                date: '10. 5. 2024',
+                tag: 'FAKTURA PDF (EXTRAHOVÁNO)',
+                downloadable: true,
+                downloadFunc: function() {
+                    downloadInvoicePDF('reputelligent_to_dive_rnd');
+                },
+                render: function() {
+                    return `
+                        <div class="doc-layout-invoice">
+                            <div class="inv-header">
+                                <div class="inv-title">Invoice: Reputelligent to Dive Analytica (R&D)</div>
+                            </div>
+                            <div class="inv-address-grid">
+                                <div class="inv-address-col">
+                                    <strong>Reputelligent, Inc.</strong><br>
+                                    123 Silicon Valley Way<br>
+                                    San Francisco, CA 94103<br>
+                                    USA
+                                </div>
+                                <div class="inv-address-col" style="text-align: right;">
+                                    <strong>Dive Analytica GmbH</strong><br>
+                                    45 Rue de la Technologie<br>
+                                    Brussels, BE 1000<br>
+                                    EU
+                                </div>
+                            </div>
+                            <div class="inv-meta-grid">
+                                <div><strong>Invoice Number:</strong> REPT-DA-2024-RND-001</div>
+                                <div><strong>Invoice Date:</strong> 2024-05-10</div>
+                                <div><strong>Due Date:</strong> 2024-06-10</div>
+                            </div>
+                            <table class="inv-table">
+                                <thead>
+                                    <tr>
+                                        <th>Item</th>
+                                        <th style="text-align: right;">Qty</th>
+                                        <th style="text-align: right;">Unit Price</th>
+                                        <th style="text-align: right;">Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Joint R&D Project: Pilot Phase Contribution</td>
+                                        <td style="text-align: right;">1</td>
+                                        <td style="text-align: right;">$100,000.00</td>
+                                        <td style="text-align: right;">$100,000.00</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Shared Server & Cloud Infrastructure (1 Month)</td>
+                                        <td style="text-align: right;">1</td>
+                                        <td style="text-align: right;">$5,000.00</td>
+                                        <td style="text-align: right;">$5,000.00</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Joint Project Management (20 Hours)</td>
+                                        <td style="text-align: right;">20</td>
+                                        <td style="text-align: right;">$250.00</td>
+                                        <td style="text-align: right;">$5,000.00</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <div class="inv-totals-box">
+                                <div>Subtotal:</div>
+                                <div>$110,000.00</div>
+                                <div>VAT (US, N/A):</div>
+                                <div>$0.00</div>
+                                <div class="bold">Total:</div>
+                                <div class="bold">$110,000.00</div>
+                            </div>
+                            <div class="inv-bank-info">
+                                <strong>Payment Terms:</strong> Net 30 days. Payment via wire transfer.<br>
+                                <strong>Bank Name:</strong> International Tech Bank<br>
+                                <strong>Account Number:</strong> 5678-1234-9012-5678 | <strong>SWIFT:</strong> INTBUSA5678
+                            </div>
+                            <div class="inv-desc">
+                                <strong>Description:</strong> Contribution to the pilot phase of a joint research and development project focused on advanced social rating algorithms, including shared infrastructure and project management.
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+        ];
+
+        // Decrypted files list generator
+        function renderFilesList() {
+            const container = document.getElementById('files-container');
+            const explorerTitle = document.getElementById('explorer-view-title');
+            container.innerHTML = '';
+
+            const crumb = document.getElementById('current-folder-breadcrumb');
+            if (currentFolder === 'root') {
+                crumb.textContent = 'root';
+                explorerTitle.textContent = 'Soubory v adresáři';
+                
+                // Render root files
+                rootFiles.forEach(file => {
+                    const item = document.createElement('div');
+                    item.className = 'file-item';
+                    item.setAttribute('id', `file-item-${file.id}`);
+                    
+                    let iconSvg = '';
+                    let zipLockClass = '';
+                    
+                    // All files in root are ZIPs now
+                    const isUnlockedThisZip = (file.id === 'hrda_zip' && isZipDecrypted);
+                    zipLockClass = isUnlockedThisZip ? 'zip' : 'zip locked';
+                    
+                    if (isUnlockedThisZip) {
+                        // Unlocked folder icon
+                        iconSvg = `<svg viewBox="0 0 24 24"><path d="M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2z"/></svg>`;
+                    } else {
+                        // Locked ZIP/lock icon
+                        iconSvg = `<svg viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>`;
+                    }
+
+                    const displayName = isUnlockedThisZip ? 'hrda_dive_analytica_proof (Rozbaleno)' : file.name;
+                    const displayMeta = isUnlockedThisZip ? 'Složka (Rozbaleno)' : file.size + ' • ' + file.date;
+
+                    item.innerHTML = `
+                        <div class="file-main">
+                            <div class="file-icon ${zipLockClass}">
+                                ${iconSvg}
+                            </div>
+                            <div class="file-details">
+                                <span class="file-title">${displayName}</span>
+                                <span class="file-meta">${displayMeta}</span>
+                            </div>
+                        </div>
+                        <div class="arrow-indicator">
+                            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M8.59 16.59L14.17 11 8.59 5.41 10 4l6 6-6 6-1.41-1.41z"/>
+                            </svg>
+                        </div>
+                    `;
+                    
+                    item.onclick = () => {
+                        playNavigationSound();
+                        document.querySelectorAll('.file-item').forEach(el => el.classList.remove('selected'));
+                        item.classList.add('selected');
+                        
+                        if (isUnlockedThisZip) {
+                            // Enter the unzipped folder
+                            currentFolder = 'zip_contents';
+                            renderFilesList();
+                        } else {
+                            // Trigger password popup
+                            openDecryptionModal(file);
+                        }
+                    };
+                    container.appendChild(item);
+                });
+            } else if (currentFolder === 'zip_contents') {
+                crumb.textContent = 'root / hrda_dive_analytica_proof';
+                explorerTitle.textContent = 'Extrahované soubory';
+
+                // Add Back Option
+                const backItem = document.createElement('div');
+                backItem.className = 'file-item';
+                backItem.style.background = 'rgba(57, 255, 20, 0.02)';
+                backItem.innerHTML = `
+                    <div class="file-main">
+                        <div class="file-icon">
+                            <svg viewBox="0 0 24 24"><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>
+                        </div>
+                        <div class="file-details">
+                            <span class="file-title">.. [Zpět do root adresáře]</span>
+                            <span class="file-meta">Složka</span>
+                        </div>
+                    </div>
+                    <div class="arrow-indicator">
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+                        </svg>
+                    </div>
+                `;
+                backItem.onclick = () => {
+                    playNavigationSound();
+                    currentFolder = 'root';
+                    renderFilesList();
+                };
+                container.appendChild(backItem);
+
+                // Render ZIP folder files
+                zipFolderFiles.forEach(file => {
+                    const item = document.createElement('div');
+                    item.className = 'file-item';
+                    item.setAttribute('id', `file-item-${file.id}`);
+                    item.innerHTML = `
+                        <div class="file-main">
+                            <div class="file-icon">
+                                <svg viewBox="0 0 24 24"><path d="M20 2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-8.5 7.5c0 .83-.67 1.5-1.5 1.5H9v2H7.5V7H10c.83 0 1.5.67 1.5 1.5v1zm5 2c0 .83-.67 1.5-1.5 1.5h-2.5V7H15c.83 0 1.5.67 1.5 1.5v3zm4-3.5H19v1h1.5V10H19v3h-1.5V7h3v1.5zM9 8.5h1v1H9v-1zm5 1.5h1v1.5h-1V10zM4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6z"/></svg>
+                            </div>
+                            <div class="file-details">
+                                <span class="file-title">${file.name}</span>
+                                <span class="file-meta">${file.size} • ${file.date}</span>
+                            </div>
+                        </div>
+                        <div class="arrow-indicator">
+                            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M8.59 16.59L14.17 11 8.59 5.41 10 4l6 6-6 6-1.41-1.41z"/>
+                            </svg>
+                        </div>
+                    `;
+                    item.onclick = () => {
+                        playNavigationSound();
+                        document.querySelectorAll('.file-item').forEach(el => el.classList.remove('selected'));
+                        item.classList.add('selected');
+                        openDocument(file);
+                    };
+                    container.appendChild(item);
+                });
+            }
+        }
+
+        let currentlyOpenFile = null;
+
+        // Open a document detail view
+        function openDocument(file) {
+            currentlyOpenFile = file;
+            const viewer = document.getElementById('document-viewer');
+            const title = document.getElementById('viewer-file-title');
+            const tag = document.getElementById('viewer-file-tag');
+            const contentArea = document.getElementById('viewer-content-area');
+            const downloadPanel = document.getElementById('viewer-downloader-panel');
+
+            title.textContent = file.name;
+            tag.textContent = file.tag;
+            contentArea.innerHTML = file.render();
+
+            if (file.downloadable) {
+                downloadPanel.style.display = 'block';
+                document.getElementById('download-file-btn').onclick = file.downloadFunc;
+            } else {
+                downloadPanel.style.display = 'none';
+            }
+
+            viewer.classList.add('open');
+        }
+
+        function closeDocumentViewer() {
+            playNavigationSound();
+            const viewer = document.getElementById('document-viewer');
+            viewer.classList.remove('open');
+        }
+
+        // Decryption Modal controls
+        function openDecryptionModal(file) {
+            activeDecryptionFile = file;
+            const modal = document.getElementById('decryption-modal');
+            const errorDiv = document.getElementById('decrypt-error');
+            const passwordInput = document.getElementById('vault-password');
+            
+            // Set filenames in text
+            modal.querySelector('.modal-body-text strong').textContent = file.name;
+            
+            errorDiv.style.display = 'none';
+            passwordInput.value = '';
+            modal.style.display = 'flex';
+            passwordInput.focus();
+        }
+
+        function closeDecryptionModal() {
+            playNavigationSound();
+            const modal = document.getElementById('decryption-modal');
+            modal.style.display = 'none';
+        }
+
+        // Decryption Submit Action
+        function handleDecryptSubmit(event) {
+            event.preventDefault();
+            initAudio();
+
+            const passwordInput = document.getElementById('vault-password');
+            const passwordValue = passwordInput.value.trim();
+            const errorDiv = document.getElementById('decrypt-error');
+
+            if (!activeDecryptionFile) return;
+
+            // Only hrda_zip can decrypt with the password ProdejnyKurvy
+            if (activeDecryptionFile.decryptable && 
+                (passwordValue === 'ProdejnyKurvy' || passwordValue.toLowerCase() === 'prodejnykurvy')) {
+                errorDiv.style.display = 'none';
+                document.getElementById('decryption-modal').style.display = 'none';
+                startDecryptionAnimation();
+            } else {
+                // If it is another zip or password is wrong, it always fails
+                playErrorSound();
+                errorDiv.style.display = 'flex';
+                passwordInput.value = '';
+                passwordInput.focus();
+
+                const container = document.querySelector('.modal-container');
+                container.style.borderColor = 'var(--terminal-red)';
+                container.style.boxShadow = '0 0 35px rgba(255, 51, 51, 0.5)';
+                
+                setTimeout(() => {
+                    container.style.borderColor = 'var(--terminal-green)';
+                    container.style.boxShadow = '0 0 30px rgba(57, 255, 20, 0.3)';
+                }, 1000);
+            }
+        }
+
+        function startDecryptionAnimation() {
+            const overlay = document.getElementById('decryption-overlay');
+            const progressBar = document.getElementById('decrypt-progress');
+            const statusText = document.getElementById('decrypt-status-text');
+            const logsContainer = document.getElementById('decrypt-logs-container');
+
+            overlay.style.display = 'flex';
+            logsContainer.innerHTML = '';
+
+            const logs = [
+                { time: 0.1, text: 'NINJA@DECK_B-12:~$ unzip hrda_dive_analytica_proof.zip' },
+                { time: 0.3, text: 'Archive:  hrda_dive_analytica_proof.zip' },
+                { time: 0.5, text: '[OK] Verifying extraction signatures...' },
+                { time: 0.8, text: '[OK] Decrypting AES 256 cipher streams...' },
+                { time: 1.1, text: '   extracting: faktura_dive_to_reputelligent.pdf  [OK]' },
+                { time: 1.4, text: '   extracting: faktura_reputelligent_to_dive.pdf  [OK]' },
+                { time: 1.7, text: '   extracting: faktura_reputelligent_to_dive_rnd.pdf  [OK]' },
+                { time: 2.0, text: '[OK] Extracted 3 files from zip container.' },
+                { time: 2.3, text: 'NINJA@DECK_B-12:~$ ls -la ./extracted_proof/' }
+            ];
+
+            let progress = 0;
+            const duration = 2500;
+            const intervalTime = 40;
+            const steps = duration / intervalTime;
+            const stepIncrement = 100 / steps;
+
+            let humOsc = null;
+            let humGain = null;
+            let crackleInterval = null;
+
+            if (!isMuted && audioCtx) {
+                try {
+                    humOsc = audioCtx.createOscillator();
+                    humGain = audioCtx.createGain();
+                    humOsc.type = 'sawtooth';
+                    humOsc.frequency.setValueAtTime(60, audioCtx.currentTime); // Low hacker drone
+                    
+                    const filter = audioCtx.createBiquadFilter();
+                    filter.type = 'lowpass';
+                    filter.frequency.setValueAtTime(120, audioCtx.currentTime);
+
+                    humGain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+                    
+                    humOsc.connect(filter);
+                    filter.connect(humGain);
+                    humGain.connect(audioCtx.destination);
+                    humOsc.start();
+
+                    crackleInterval = setInterval(() => {
+                        playTone(1400 + Math.random() * 600, 'sine', 0.008, 0.015);
+                    }, 50);
+                } catch(e) {
+                    console.error(e);
+                }
+            }
+
+            const progressTimer = setInterval(() => {
+                progress += stepIncrement;
+                if (progress >= 100) {
+                    progress = 100;
+                    clearInterval(progressTimer);
+                    
+                    if (humOsc) {
+                        humOsc.stop();
+                        clearInterval(crackleInterval);
+                    }
+
+                    playSuccessSound();
+
+                    setTimeout(() => {
+                        overlay.style.display = 'none';
+                        isZipDecrypted = true;
+                        
+                        document.getElementById('system-status-text').textContent = 'DECK: ZIP_UNLOCKED';
+                        
+                        // Automatically enter the unzipped folder
+                        currentFolder = 'zip_contents';
+                        renderFilesList();
+                    }, 400);
+                }
+                
+                progressBar.style.width = `${progress}%`;
+                statusText.textContent = `ROZBALUJI ARCHIV: ${Math.floor(progress)}%`;
+            }, intervalTime);
+
+            logs.forEach(log => {
+                setTimeout(() => {
+                    const logLine = document.createElement('div');
+                    logLine.className = 'decrypt-log-line';
+                    
+                    if (log.text.includes('[OK]')) {
+                        logLine.style.color = '#39ff14';
+                    }
+                    
+                    logLine.textContent = log.text;
+                    logsContainer.appendChild(logLine);
+                    logsContainer.scrollTop = logsContainer.scrollHeight;
+
+                    playTone(850, 'sine', 0.015, 0.02);
+                }, log.time * 1000);
+            });
+        }
+
+        // Initialize file manager on load
+        window.onload = function() {
+            renderFilesList();
+        };
+
+        // Dynamically Generate and Download beautiful Invoice PDFs using jsPDF
+        function downloadInvoicePDF(invoiceType) {
+            playNavigationSound();
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF({
+                orientation: 'portrait',
+                unit: 'mm',
+                format: 'a4'
+            });
+
+            // Set standard fonts
+            doc.setFont("helvetica", "bold");
+
+            if (invoiceType === 'dive_to_reputelligent') {
+                // Header
+                doc.setFontSize(16);
+                doc.text("Invoice: Dive Analytica to Reputelligent", 20, 20);
+                
+                // Addresses
+                doc.setFontSize(10);
+                doc.text("Dive Analytica GmbH", 20, 32);
+                doc.setFont("helvetica", "normal");
+                doc.text("45 Rue de la Technologie", 20, 37);
+                doc.text("Brussels, BE 1000", 20, 42);
+                doc.text("EU", 20, 47);
+
+                doc.setFont("helvetica", "bold");
+                doc.text("Reputelligent, Inc.", 120, 32);
+                doc.setFont("helvetica", "normal");
+                doc.text("123 Silicon Valley Way", 120, 37);
+                doc.text("San Francisco, CA 94103", 120, 42);
+                doc.text("USA", 120, 47);
+
+                // Meta Info
+                doc.setFont("helvetica", "bold");
+                doc.text("Invoice Number: DA-REPT-2024-002", 20, 60);
+                doc.text("Invoice Date: 2024-04-20", 120, 60);
+                doc.text("Due Date: 2024-05-20", 20, 65);
+
+                // Table Lines
+                doc.setDrawColor(17, 17, 17);
+                doc.setLineWidth(0.4);
+                doc.line(20, 72, 190, 72);
+                doc.setFont("helvetica", "bold");
+                doc.text("Item", 22, 77);
+                doc.text("Quantity", 120, 77);
+                doc.text("Unit Price", 142, 77);
+                doc.text("Total", 170, 77);
+                doc.line(20, 80, 190, 80);
+
+                // Table Rows
+                doc.setFont("helvetica", "normal");
+                doc.text("Algorithm Calibration Services (Reputelligent Data)", 22, 85);
+                doc.text("1", 120, 85);
+                doc.text("E60,000.00", 142, 85);
+                doc.text("E60,000.00", 170, 85);
+
+                doc.text("Data Analysis & Report (Cross-Platform Discrepancies)", 22, 91);
+                doc.text("1", 120, 91);
+                doc.text("E15,000.00", 142, 91);
+                doc.text("E15,000.00", 170, 91);
+
+                doc.text("Consultation & Strategy Session (8 Hours)", 22, 97);
+                doc.text("8", 120, 97);
+                doc.text("E300.00", 142, 97);
+                doc.text("E2,400.00", 170, 97);
+                doc.line(20, 101, 190, 101);
+
+                // Totals
+                doc.text("Subtotal:", 120, 107);
+                doc.text("E77,400.00", 170, 107);
+                doc.text("VAT (BE, 21%):", 120, 113);
+                doc.text("E16,254.00", 170, 113);
+                doc.setFont("helvetica", "bold");
+                doc.text("Total:", 120, 119);
+                doc.text("E93,654.00", 170, 119);
+
+                // Payment Info
+                doc.setFont("helvetica", "normal");
+                doc.text("Payment Terms: Net 30 days. Payment via wire transfer to the account specified below.", 20, 132);
+                
+                doc.setFont("helvetica", "bold");
+                doc.text("Bank Details:", 20, 142);
+                doc.setFont("helvetica", "normal");
+                doc.text("Bank Name: European Central Finance", 20, 147);
+                doc.text("Account Number: 9876-5432-1098-7654", 20, 152);
+                doc.text("SWIFT: EURCFBE1234", 20, 157);
+
+                // Description
+                doc.setFont("helvetica", "bold");
+                doc.text("Description:", 20, 169);
+                doc.setFont("helvetica", "normal");
+                const splitText = doc.splitTextToSize("Services for calibrating Dive Analytica’s rating algorithms using Reputelligent’s US-based data, including a detailed analysis of cross-platform rating discrepancies and strategic consultation.", 170);
+                doc.text(splitText, 20, 174);
+
+                doc.save("faktura_dive_to_reputelligent.pdf");
+
+            } else if (invoiceType === 'reputelligent_to_dive') {
+                // Header
+                doc.setFontSize(16);
+                doc.text("Invoice: Reputelligent to Dive Analytica", 20, 20);
+                
+                // Addresses
+                doc.setFontSize(10);
+                doc.text("Reputelligent, Inc.", 20, 32);
+                doc.setFont("helvetica", "normal");
+                doc.text("123 Silicon Valley Way", 20, 37);
+                doc.text("San Francisco, CA 94103", 20, 42);
+                doc.text("USA", 20, 47);
+
+                doc.setFont("helvetica", "bold");
+                doc.text("Dive Analytica GmbH", 120, 32);
+                doc.setFont("helvetica", "normal");
+                doc.text("45 Rue de la Technologie", 120, 37);
+                doc.text("Brussels, BE 1000", 120, 42);
+                doc.text("EU", 120, 47);
+
+                // Meta Info
+                doc.setFont("helvetica", "bold");
+                doc.text("Invoice Number: REPT-DA-2024-001", 20, 60);
+                doc.text("Invoice Date: 2024-03-15", 120, 60);
+                doc.text("Due Date: 2024-04-15", 20, 65);
+
+                // Table Lines
+                doc.setDrawColor(17, 17, 17);
+                doc.setLineWidth(0.4);
+                doc.line(20, 72, 190, 72);
+                doc.setFont("helvetica", "bold");
+                doc.text("Item", 22, 77);
+                doc.text("Quantity", 120, 77);
+                doc.text("Unit Price", 142, 77);
+                doc.text("Total", 170, 77);
+                doc.line(20, 80, 190, 80);
+
+                // Table Rows
+                doc.setFont("helvetica", "normal");
+                doc.text("Access to EU Social Rating Data API", 22, 85);
+                doc.text("1", 120, 85);
+                doc.text("$50,000.00", 142, 85);
+                doc.text("$50,000.00", 170, 85);
+
+                doc.text("Historical EU Rating Data (Bulk Export)", 22, 91);
+                doc.text("1", 120, 91);
+                doc.text("$25,000.00", 142, 91);
+                doc.text("$25,000.00", 170, 91);
+
+                doc.text("Technical Support & Integration (10 Hours)", 22, 97);
+                doc.text("10", 120, 97);
+                doc.text("$200.00", 142, 97);
+                doc.text("$2,000.00", 170, 97);
+                doc.line(20, 101, 190, 101);
+
+                // Totals
+                doc.text("Subtotal:", 120, 107);
+                doc.text("$77,000.00", 170, 107);
+                doc.text("VAT (EU, 21%):", 120, 113);
+                doc.text("$16,170.00", 170, 113);
+                doc.setFont("helvetica", "bold");
+                doc.text("Total:", 120, 119);
+                doc.text("$93,170.00", 170, 119);
+
+                // Payment Info
+                doc.setFont("helvetica", "normal");
+                doc.text("Payment Terms: Net 30 days. Payment via wire transfer to the account specified below.", 20, 132);
+                
+                doc.setFont("helvetica", "bold");
+                doc.text("Bank Details:", 20, 142);
+                doc.setFont("helvetica", "normal");
+                doc.text("Bank Name: Global Commerce Bank", 20, 147);
+                doc.text("Account Number: 1234-5678-9012-3456", 20, 152);
+                doc.text("SWIFT: GLOBCUS6789", 20, 157);
+
+                // Description
+                doc.setFont("helvetica", "bold");
+                doc.text("Description:", 20, 169);
+                doc.setFont("helvetica", "normal");
+                const splitText = doc.splitTextToSize("Provision of access to Dive Analytica’s proprietary European social rating data via API and bulk export, along with technical support for integration into Reputelligent’s platform.", 170);
+                doc.text(splitText, 20, 174);
+
+                doc.save("faktura_reputelligent_to_dive.pdf");
+
+            } else if (invoiceType === 'reputelligent_to_dive_rnd') {
+                // Header
+                doc.setFontSize(16);
+                doc.text("Invoice: Reputelligent to Dive Analytica (R&D)", 20, 20);
+                
+                // Addresses
+                doc.setFontSize(10);
+                doc.text("Reputelligent, Inc.", 20, 32);
+                doc.setFont("helvetica", "normal");
+                doc.text("123 Silicon Valley Way", 20, 37);
+                doc.text("San Francisco, CA 94103", 20, 42);
+                doc.text("USA", 20, 47);
+
+                doc.setFont("helvetica", "bold");
+                doc.text("Dive Analytica GmbH", 120, 32);
+                doc.setFont("helvetica", "normal");
+                doc.text("45 Rue de la Technologie", 120, 37);
+                doc.text("Brussels, BE 1000", 120, 42);
+                doc.text("EU", 120, 47);
+
+                // Meta Info
+                doc.setFont("helvetica", "bold");
+                doc.text("Invoice Number: REPT-DA-2024-RND-001", 20, 60);
+                doc.text("Invoice Date: 2024-05-10", 120, 60);
+                doc.text("Due Date: 2024-06-10", 20, 65);
+
+                // Table Lines
+                doc.setDrawColor(17, 17, 17);
+                doc.setLineWidth(0.4);
+                doc.line(20, 72, 190, 72);
+                doc.setFont("helvetica", "bold");
+                doc.text("Item", 22, 77);
+                doc.text("Quantity", 120, 77);
+                doc.text("Unit Price", 142, 77);
+                doc.text("Total", 170, 77);
+                doc.line(20, 80, 190, 80);
+
+                // Table Rows
+                doc.setFont("helvetica", "normal");
+                doc.text("Joint R&D Project: Pilot Phase Contribution", 22, 85);
+                doc.text("1", 120, 85);
+                doc.text("$100,000.00", 142, 85);
+                doc.text("$100,000.00", 170, 85);
+
+                doc.text("Shared Server & Cloud Infrastructure (1 Month)", 22, 91);
+                doc.text("1", 120, 91);
+                doc.text("$5,000.00", 142, 91);
+                doc.text("$5,000.00", 170, 91);
+
+                doc.text("Joint Project Management (20 Hours)", 22, 97);
+                doc.text("20", 120, 97);
+                doc.text("$250.00", 142, 97);
+                doc.text("$5,000.00", 170, 97);
+                doc.line(20, 101, 190, 101);
+
+                // Totals
+                doc.text("Subtotal:", 120, 107);
+                doc.text("$110,000.00", 170, 107);
+                doc.text("VAT (US, N/A):", 120, 113);
+                doc.text("$0.00", 170, 113);
+                doc.setFont("helvetica", "bold");
+                doc.text("Total:", 120, 119);
+                doc.text("$110,000.00", 170, 119);
+
+                // Payment Info
+                doc.setFont("helvetica", "normal");
+                doc.text("Payment Terms: Net 30 days. Payment via wire transfer to the account specified below.", 20, 132);
+                
+                doc.setFont("helvetica", "bold");
+                doc.text("Bank Details:", 20, 142);
+                doc.setFont("helvetica", "normal");
+                doc.text("Bank Name: International Tech Bank", 20, 147);
+                doc.text("Account Number: 5678-1234-9012-5678", 20, 152);
+                doc.text("SWIFT: INTBUSA5678", 20, 157);
+
+                // Description
+                doc.setFont("helvetica", "bold");
+                doc.text("Description:", 20, 169);
+                doc.setFont("helvetica", "normal");
+                const splitText = doc.splitTextToSize("Contribution to the pilot phase of a joint research and development project focused on advanced social rating algorithms, including shared infrastructure and project management.", 170);
+                doc.text(splitText, 20, 174);
+
+                doc.save("faktura_reputelligent_to_dive_rnd.pdf");
+            }
+        }
+    </script>
+</body>
+</html>
