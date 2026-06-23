@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="utf-8"/>
+    <title>Nosedive App - Privacy Policy / Zásady ochrany osobních údajů</title>
+    <meta name="description" content="Privacy Policy for the Nosedive LARP companion mobile application. Compliant with Apple Developer policies and GDPR."/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link rel="apple-touch-icon" sizes="76x76" href="/apple-touch-icon.png"/>
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png"/>
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png"/>
+    <link rel="manifest" href="/site.webmanifest"/>
+    <meta name="theme-color" content="#c78ee9"/>
+    
+    <!-- Bootstrap 5 & Fonts -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --brand-pink: #dfaba9;
+            --brand-purple: #c78ee9;
+            --brand-dark: #2d2331;
+            --brand-light: #fdf8f8;
+            --glass-bg: rgba(255, 255, 255, 0.82);
+            --glass-border: rgba(255, 255, 255, 0.5);
+            --shadow-color: rgba(199, 142, 233, 0.15);
+        }
+
+        body {
+            font-family: 'Roboto', Arial, sans-serif;
+            color: var(--brand-dark);
+            background: linear-gradient(135deg, #f5eef0 0%, #e2d9f3 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            font-weight: 300;
+        }
+
+        h1, h2, h3, .brand-title {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 100;
+            color: var(--brand-dark);
+        }
+
+        .brand-title {
+            font-size: 2.2rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            margin: 0;
+        }
+
+        .brand-title span {
+            font-weight: 300;
+            color: var(--brand-purple);
+        }
+
+        /* Nav and Header styling */
+        .policy-navbar {
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--glass-border);
+            box-shadow: 0 4px 30px var(--shadow-color);
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        /* Language Toggle Switch */
+        .lang-switch-container {
+            display: flex;
+            align-items: center;
+            background: rgba(45, 35, 49, 0.08);
+            border-radius: 30px;
+            padding: 4px;
+            width: 140px;
+            position: relative;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .lang-option {
+            flex: 1;
+            text-align: center;
+            font-size: 0.85rem;
+            font-weight: 600;
+            padding: 6px 0;
+            z-index: 2;
+            color: var(--brand-dark);
+            transition: color 0.3s ease;
+        }
+
+        .lang-option.active {
+            color: #fff;
+        }
+
+        .lang-slider {
+            position: absolute;
+            width: 66px;
+            height: 32px;
+            background: var(--brand-purple);
+            border-radius: 26px;
+            top: 4px;
+            left: 4px;
+            z-index: 1;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 2px 10px rgba(199, 142, 233, 0.4);
+        }
+
+        body[data-lang="en"] .lang-slider {
+            transform: translateX(66px);
+        }
+
+        /* Content Visibility */
+        body[data-lang="cs"] .lang-en {
+            display: none !important;
+        }
+
+        body[data-lang="en"] .lang-cs {
+            display: none !important;
+        }
+
+        /* Policy Card wrapper */
+        .policy-container {
+            max-width: 900px;
+            margin: 3rem auto;
+            padding: 0 1.5rem;
+            flex-grow: 1;
+        }
+
+        .policy-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 3rem;
+            box-shadow: 0 10px 40px var(--shadow-color);
+            transition: all 0.5s ease;
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin-top: 2.5rem;
+            margin-bottom: 1.2rem;
+            border-bottom: 2px solid rgba(199, 142, 233, 0.2);
+            padding-bottom: 0.5rem;
+        }
+
+        h3 {
+            font-size: 1.3rem;
+            font-weight: 500;
+            margin-top: 1.8rem;
+            margin-bottom: 0.8rem;
+            color: var(--brand-purple);
+        }
+
+        p, li {
+            font-size: 1.05rem;
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+
+        ul {
+            padding-left: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        li {
+            margin-bottom: 0.5rem;
+        }
+
+        .badge-compliance {
+            background: rgba(199, 142, 233, 0.15);
+            color: var(--brand-dark);
+            border: 1px solid var(--brand-purple);
+            font-size: 0.8rem;
+            font-weight: 500;
+            padding: 0.4rem 1rem;
+            border-radius: 20px;
+            display: inline-block;
+            margin-bottom: 2rem;
+        }
+
+        /* Highlight box for deletion info */
+        .deletion-notice-box {
+            background: rgba(199, 142, 233, 0.08);
+            border-left: 4px solid var(--brand-purple);
+            padding: 1.5rem;
+            border-radius: 4px 16px 16px 4px;
+            margin: 1.5rem 0;
+        }
+
+        /* Footer */
+        footer {
+            background: var(--glass-bg);
+            border-top: 1px solid var(--glass-border);
+            padding: 1.5rem 0;
+            margin-top: auto;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+
+        footer a {
+            color: var(--brand-dark);
+            text-decoration: underline;
+            transition: color 0.3s ease;
+        }
+
+        footer a:hover {
+            color: var(--brand-purple);
+        }
+
+        .effect {
+            position: fixed;
+            border-radius: 50%;
+            border: 5px solid transparent;
+            transition: opacity 0.25s;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        @keyframes click-effect {
+            25% {border-color: rgba(199, 142, 233, 0.75); width: 80px; height: 80px;}
+            100% {box-shadow: 0 0 5px 2px rgba(199, 142, 233, 0.5); width: 100px; height: 100px;}
+        }
+
+        .effect_animating {animation: 0.5s click-effect linear;}
+        .effect_removing {opacity: 0; transition: opacity 0.25s;}
+
+        @media (max-width: 768px) {
+            .policy-card {
+                padding: 1.5rem;
+            }
+            .brand-title {
+                font-size: 1.8rem;
+            }
+        }
+    </style>
+</head>
+<body data-lang="cs">
+
+    <!-- Navigation Header -->
+    <nav class="policy-navbar">
+        <div class="container d-flex justify-content-between align-items-center">
+            <a href="/" class="text-decoration-none">
+                <h1 class="brand-title"><span>nosedive</span> larp</h1>
+            </a>
+            
+            <!-- Bilingual Toggle -->
+            <div class="lang-switch-container" id="langToggle" role="button" aria-label="Toggle language / Přepnout jazyk">
+                <div class="lang-slider"></div>
+                <div class="lang-option active" id="lang-cs-opt">CZ</div>
+                <div class="lang-option" id="lang-en-opt">EN</div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Container -->
+    <main class="policy-container">
+        <div class="policy-card">
+            
+            <!-- CZECH VERSION -->
+            <div class="lang-cs">
+                <span class="badge-compliance">Splňuje podmínky Apple App Store & GDPR</span>
+                <h1>Zásady ochrany osobních údajů</h1>
+                <p class="text-muted">Poslední aktualizace: 23. června 2026</p>
+                
+                <p>Tyto zásady ochrany osobních údajů popisují, jak mobilní aplikace <strong>Dive</strong> (dále jen „Aplikace“) vyvinutá pro účely zážitkové hry/larpu <strong>Nosedive larp</strong> (dále jen „Hra“) shromažďuje, ukládá a zpracovává osobní údaje svých uživatelů. Aplikace slouží jako herní doplněk simulující dystopickou sociální síť.</p>
+
+                <h2>1. Správce osobních údajů</h2>
+                <p>Správcem osobních údajů je organizační tým Nosedive larp, zastoupený hlavním organizátorem:</p>
+                <ul>
+                    <li><strong>Tomáš Toušek</strong></li>
+                    <li>E-mail pro dotazy ohledně ochrany údajů: <a href="mailto:larp@nosedive.games">larp@nosedive.games</a></li>
+                </ul>
+
+                <h2>2. Rozsah a účel shromažďovaných údajů</h2>
+                <p>Aplikace shromažďuje a zpracovává výhradně údaje nezbytné pro simulaci herních mechanik a průběh Hry. Tyto údaje zahrnují:</p>
+                <ul>
+                    <li><strong>Údaje o účtu:</strong> Herní uživatelské jméno a heslo (uložené v šifrované podobě) pro účely přihlášení do aplikace.</li>
+                    <li><strong>Profilové informace:</strong> Profilová fotografie (nahraná uživatelem pro Hru) a herní role.</li>
+                    <li><strong>Herní aktivita:</strong> Hodnocení (hvězdičky 0–5) udělená jiným hráčům, textové příspěvky na herní síti, zprávy odeslané v rámci herního chatu a transakce s herní měnou (EuroToken).</li>
+                    <li><strong>Technická data:</strong> Diagnostické logy a identifikátor zařízení pro zajištění stability aplikace a prevenci technických chyb během Hry.</li>
+                </ul>
+                <p>Zpracování těchto údajů probíhá výhradně pro účely plnění smlouvy o účasti na Hře (realizace herního zážitku) a na základě oprávněného zájmu organizátorů na hladkém a stabilním průběhu Hry.</p>
+
+                <h2>3. Příjemci údajů a zabezpečení</h2>
+                <p>Vaše údaje považujeme za důvěrné. Údaje neposkytujeme žádným komerčním třetím stranám.</p>
+                <p>Data jsou bezpečně uložena na cloudové platformě <strong>Google Firebase</strong> (Google Ireland Limited), která splňuje vysoké standardy zabezpečení a je plně v souladu s nařízením GDPR. Přenos dat mezi aplikací a serverem je šifrován pomocí protokolu HTTPS/TLS.</p>
+
+                <h2>4. Doba uchovávání údajů</h2>
+                <p>Vzhledem k tomu, že Aplikace je určena výhradně pro účely jednorázových herních běhů larpové hry, jsou veškerá osobní a herní data uchovávána pouze po nezbytně nutnou dobu. <strong>Všechny profilové fotografie, příspěvky, zprávy a databázové záznamy hráčů jsou kompletně smazány nebo plně anonymizovány nejpozději do 30 dnů od ukončení příslušného herního běhu.</strong></p>
+
+                <h2>5. Práva uživatelů a smazání účtu (Apple Compliance)</h2>
+                <p>V souladu s GDPR máte právo na přístup ke svým osobním údajům, jejich opravu, omezení zpracování a vznesení námitky.</p>
+                <p><strong>Právo na smazání (Právo být zapomenut):</strong> V souladu s požadavky společnosti Apple (App Store Review Guideline 5.1.1) můžete kdykoli požádat o kompletní odstranění svého účtu a všech souvisejících dat.</p>
+                
+                <div class="deletion-notice-box">
+                    <p class="mb-2"><strong>Jak požádat o smazání:</strong></p>
+                    <p class="mb-0">Jedinou možností, jak zažádat o smazání účtu a veškerých souvisejících dat, je <strong>napsat e-mail na adresu <a href="mailto:larp@nosedive.games?subject=Žádost o smazání herního účtu a dat - Dive App">larp@nosedive.games</a></strong>.</p>
+                </div>
+                
+                <p>Pro úspěšné zpracování žádosti prosím v e-mailu uveďte:</p>
+                <ul>
+                    <li>Vaše herní uživatelské jméno (username) v Aplikaci.</li>
+                    <li>E-mailovou adresu, pod kterou jste se v Aplikaci registrovali.</li>
+                </ul>
+                <p>Po obdržení této žádosti budou veškerá vaše data z databáze trvale odstraněna nebo plně anonymizována nejpozději do 72 hodin.</p>
+            </div>
+
+            <!-- ENGLISH VERSION -->
+            <div class="lang-en">
+                <span class="badge-compliance">Compliant with Apple App Store policies & GDPR</span>
+                <h1>Privacy Policy</h1>
+                <p class="text-muted">Last updated: June 23, 2026</p>
+                
+                <p>This privacy policy describes how the mobile companion application <strong>Dive</strong> (the "Application") developed for the live action role-playing game <strong>Nosedive larp</strong> (the "Game") collects, stores, and processes the personal data of its users. The Application serves as an in-game simulator of a fictional dystopian social network.</p>
+
+                <h2>1. Data Controller</h2>
+                <p>The data controller responsible for your personal data is the Nosedive LARP organizing team, represented by the lead organizer:</p>
+                <ul>
+                    <li><strong>Tomáš Toušek</strong></li>
+                    <li>Email for privacy inquiries: <a href="mailto:larp@nosedive.games">larp@nosedive.games</a></li>
+                </ul>
+
+                <h2>2. Scope and Purpose of Data Collection</h2>
+                <p>The Application collects and processes only the data strictly necessary for the simulation of game mechanics and the overall execution of the Game. This data includes:</p>
+                <ul>
+                    <li><strong>Account Credentials:</strong> In-game username and password (stored in a hashed format) to allow secure access to the companion app.</li>
+                    <li><strong>Profile Information:</strong> Profile photo (uploaded by the user for the simulation) and the assigned game character role.</li>
+                    <li><strong>In-game Activity:</strong> Ratings (0–5 stars) submitted to other players, text posts shared on the simulated social wall, messages sent in the game chat, and virtual currency transactions (€T).</li>
+                    <li><strong>Technical Data:</strong> Diagnostic logs and unique device identifiers to troubleshoot stability issues and prevent system crashes during the live event.</li>
+                </ul>
+                <p>The processing of this data is necessary for the performance of a contract (facilitating the larp event participation) and for our legitimate interests in ensuring a secure and synchronized game experience.</p>
+
+                <h2>3. Data Sharing and Security</h2>
+                <p>We respect your privacy. No personal data collected in the Application is shared with, or sold to, any commercial third parties.</p>
+                <p>All data is stored securely on <strong>Google Firebase</strong> (provided by Google Ireland Limited), which adheres to industry-leading security standards and is fully GDPR compliant. All data transmission between the app and servers is encrypted using HTTPS/TLS protocols.</p>
+
+                <h2>4. Data Retention</h2>
+                <p>Because the companion Application is utilized solely for one-off larp sessions, data storage is strictly temporary. <strong>All player profile photos, chat histories, wall posts, and backend database entries are permanently deleted or anonymized within 30 days after the end of the larp run.</strong></p>
+
+                <h2>5. User Rights & Account Deletion (Apple Compliance)</h2>
+                <p>Under GDPR, you have the right to access, correct, restrict processing, or object to the processing of your data.</p>
+                <p><strong>Right to Erasure (Right to be Forgotten):</strong> In compliance with App Store policies (App Store Review Guideline 5.1.1), users can request complete removal of their account and all associated records at any time.</p>
+                
+                <div class="deletion-notice-box">
+                    <p class="mb-2"><strong>How to request deletion:</strong></p>
+                    <p class="mb-0">The sole method to request the deletion of your account and associated data is to <strong>send an email to <a href="mailto:larp@nosedive.games?subject=Account & Data Deletion Request - Dive App">larp@nosedive.games</a></strong>.</p>
+                </div>
+                
+                <p>To ensure we can process your request, please include the following details in your email:</p>
+                <ul>
+                    <li>Your in-game username in the Application.</li>
+                    <li>The email address you used to register in the Application.</li>
+                </ul>
+                <p>Upon receiving this request, your account and all associated in-game data will be permanently deleted or anonymized in our databases within 72 hours.</p>
+            </div>
+            
+        </div>
+    </main>
+
+    <!-- Page Footer -->
+    <footer>
+        <div class="container text-muted">
+            <span class="lang-cs">&copy; 2026 Nosedive larp. Všechna práva vyhrazena. Zpět na <a href="/">Nosedive.games</a>.</span>
+            <span class="lang-en">&copy; 2026 Nosedive larp. All rights reserved. Back to <a href="/">Nosedive.games</a>.</span>
+        </div>
+    </footer>
+
+    <!-- Interactive Logic & Click Effect -->
+    <script>
+        // Language Switcher Toggle
+        const langToggle = document.getElementById('langToggle');
+        const langCsOpt = document.getElementById('lang-cs-opt');
+        const langEnOpt = document.getElementById('lang-en-opt');
+        const body = document.body;
+
+        // Load language preference
+        const savedLang = localStorage.getItem('nosedive-privacy-lang');
+        if (savedLang === 'en' || savedLang === 'cs') {
+            setLanguage(savedLang);
+        } else {
+            setLanguage('cs'); // Default is Czech matching the main site
+        }
+
+        langToggle.addEventListener('click', () => {
+            const currentLang = body.getAttribute('data-lang');
+            const nextLang = currentLang === 'cs' ? 'en' : 'cs';
+            setLanguage(nextLang);
+        });
+
+        function setLanguage(lang) {
+            body.setAttribute('data-lang', lang);
+            localStorage.setItem('nosedive-privacy-lang', lang);
+            
+            if (lang === 'cs') {
+                langCsOpt.classList.add('active');
+                langEnOpt.classList.remove('active');
+            } else {
+                langCsOpt.classList.remove('active');
+                langEnOpt.classList.add('active');
+            }
+        }
+
+        // Click ripple/circle effect (matches brand aesthetic)
+        window.addEventListener('click', event => renderEffect(event));
+        function renderEffect(event) {
+            let effect = document.createElement('div');
+            document.body.appendChild(effect);
+            effect.classList.add('effect');
+            effect.style.left = event.clientX + 'px';
+            effect.style.top = event.clientY + window.scrollY + 'px';
+            effect.classList.add('effect_animating');
+            setTimeout(() => removeEffect(effect), 1000);
+        }
+        function removeEffect(effect) {
+            effect.classList.add('effect_removing');
+            setTimeout(() => {
+                if (effect.parentNode) {
+                    document.body.removeChild(effect);
+                }
+            }, 500);
+        }
+    </script>
+</body>
+</html>
